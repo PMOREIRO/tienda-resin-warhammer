@@ -12,12 +12,10 @@ body { background-color: var(--bg-void); color: var(--text-main); font-family: v
 .subtitle-text { font-size: 0.7rem; color: #888; letter-spacing: 3px; margin-top: -2px; }
 .header-actions { display: flex; align-items: center; gap: 20px; }
 
-/* ICONOS HEADER */
+/* MENÚS FLOTANTES */
 .header-icon-btn { position: relative; font-size: 1.4rem; color: var(--gold-main); cursor: pointer; padding: 10px; }
 .cart-badge { position: absolute; top: 0; right: 0; background: var(--tech-red); color: white; font-size: 0.7rem; padding: 2px 5px; border-radius: 50%; border: 1px solid #000; }
 .avatar-circle { width: 45px; height: 45px; border-radius: 50%; border: 2px solid var(--gold-main); cursor: pointer; object-fit: cover; }
-
-/* MENÚS FLOTANTES */
 .mini-cart { position: absolute; top: 60px; right: 0; width: 300px; background: var(--bg-panel); border: 1px solid var(--gold-main); box-shadow: 0 10px 30px rgba(0,0,0,0.9); z-index: 1000; display: flex; flex-direction: column; }
 .dropdown-menu { position: absolute; top: 65px; right: 0; background: var(--bg-panel); border: 1px solid var(--gold-dim); width: 220px; padding: 5px 0; display: flex; flex-direction: column; z-index: 1001; }
 .dropdown-item { padding: 12px 20px; color: #ccc; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.2s; }
