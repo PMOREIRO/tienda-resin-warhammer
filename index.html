@@ -7,59 +7,45 @@
     
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/style.css">
 
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-    
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
-    <script type="text/javascript">
-        (function(){ emailjs.init("eOQ8QN3nblcL7Y9KV"); })();
-    </script>
+    <script type="text/javascript"> (function(){ emailjs.init("eOQ8QN3nblcL7Y9KV"); })(); </script>
 </head>
 <body>
 
     <header class="main-header">
         <div class="header-brand" onclick="window.location.reload()">
-            <img src="logo.png" alt="Logo" onerror="this.style.display='none'" class="logo-img">
+            <img src="img/logo.png" alt="Logo" onerror="this.style.display='none'" class="logo-img">
             <div class="brand-text">
                 <span class="warhammer-font">RESIN<span class="text-gold">3D</span>PRINTING</span>
                 <span class="subtitle-text">SUPPLY DROP</span>
             </div>
         </div>
-
         <div class="header-actions">
-            <div class="cart-wrapper" style="position: relative;">
-                <div class="header-icon-btn" onclick="toggleMiniCart()">
-                    <i class="fa-solid fa-cart-shopping"></i>
-                    <span id="cart-count" class="cart-badge">0</span>
-                </div>
-                <div id="mini-cart-dropdown" class="mini-cart hidden">
-                    <div id="mini-cart-items" class="mini-items-list"><p style="padding:10px; color:#666;">Vacío...</p></div>
-                    <div class="mini-footer">
-                        <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-weight:bold;">
-                            <span>TOTAL:</span> <span id="mini-cart-total" class="text-gold">0.00€</span>
-                        </div>
-                        <button onclick="goToFullCart()" class="btn-action full-width">VER CARRITO</button>
-                    </div>
-                </div>
+            <div class="header-icon-btn" onclick="toggleMiniCart()">
+                <i class="fa-solid fa-cart-shopping"></i>
+                <span id="cart-count" class="cart-badge">0</span>
+            </div>
+            <div id="mini-cart-dropdown" class="mini-cart hidden">
+                <div id="mini-cart-items" class="mini-items-list"><p style="padding:10px; color:#666;">Vacío...</p></div>
+                <div class="mini-footer"><button onclick="goToFullCart()" class="btn-action full-width">VER CARRITO</button></div>
             </div>
 
             <div id="auth-container">
                 <div id="guest-buttons">
                     <button onclick="openLogin('login')" class="btn-text-gold">ENTRAR</button>
-                    <button onclick="openLogin('signup')" class="btn-solid-gold">CREAR CUENTA</button>
+                    <button onclick="openLogin('signup')" class="btn-solid-gold">CREAR</button>
                 </div>
-                
                 <div id="user-display" class="hidden user-dropdown-wrapper">
                     <img id="header-avatar" src="" class="avatar-circle" onclick="toggleUserMenu()">
                     <div id="user-dropdown" class="dropdown-menu hidden">
                         <div class="dropdown-header"><span id="dropdown-username">USER</span></div>
                         <div class="dropdown-item" onclick="checkAuthAndRedirect('profile')"><i class="fa-solid fa-id-card"></i> Mi Perfil</div>
                         <div id="admin-link" class="dropdown-item hidden" onclick="setView('admin')"><i class="fa-solid fa-wrench"></i> Admin Panel</div>
-                        <hr style="border-color:#333; margin: 5px 0;">
                         <div class="dropdown-item text-red" onclick="logout()"><i class="fa-solid fa-power-off"></i> Salir</div>
                     </div>
                 </div>
@@ -77,21 +63,17 @@
         </div>
         
         <div id="view-cart" class="view-section hidden">
-            <div class="section-title"><h2 class="gothic-title">MANIFIESTO DE CARGA</h2></div>
+            <div class="section-title"><h2 class="gothic-title">MANIFIESTO</h2></div>
             <div class="cart-page-layout">
                 <div class="cart-table-container">
                     <table class="tech-table cart-table">
-                        <thead><tr><th>ACTIVO</th><th>PRECIO</th><th>CANTIDAD</th><th>TOTAL</th><th>ACCIÓN</th></tr></thead>
+                        <thead><tr><th>ACTIVO</th><th>PRECIO</th><th>CANT.</th><th>TOTAL</th><th></th></tr></thead>
                         <tbody id="full-cart-body"></tbody>
                     </table>
-                    <div id="empty-cart-msg" class="hidden" style="text-align:center; padding:40px; color:#666;">SIN SUMINISTROS.</div>
                 </div>
                 <div class="cart-summary-box">
-                    <h3 class="text-gold">RESUMEN</h3>
-                    <div class="summary-row"><span>Subtotal:</span> <span id="final-subtotal">0.00€</span></div>
-                    <div class="summary-row total"><span>TOTAL:</span> <span id="final-total" class="text-gold">0.00€</span></div>
-                    <button onclick="prepareCheckout()" class="btn-action full-width btn-green" style="margin-bottom: 10px;">CONFIRMAR PEDIDO</button>
-                    <button onclick="setView('store')" class="btn-action full-width btn-gold">SEGUIR COMPRANDO</button>
+                    <h3 class="text-gold">TOTAL: <span id="final-total">0.00€</span></h3>
+                    <button onclick="prepareCheckout()" class="btn-action full-width btn-green">CONFIRMAR PEDIDO</button>
                 </div>
             </div>
         </div>
@@ -118,30 +100,20 @@
 
         <div id="view-profile" class="view-section hidden">
             <div class="profile-layout">
-                <div class="avatar-editor" style="text-align: left;">
-                    <div style="text-align:center; margin-bottom:20px;">
-                        <img id="profile-avatar-big" src="" style="width:120px; height:120px; border-radius:50%; object-fit:cover; border:2px solid var(--gold-main);">
-                    </div>
-                    
-                    <h3 class="text-gold" style="border-bottom:1px solid #333; margin-bottom:15px;">DATOS DEL OPERATIVO</h3>
+                <div class="avatar-editor">
+                    <div style="text-align:center;"><img id="profile-avatar-big" src="" class="avatar-circle" style="width:100px; height:100px;"></div>
                     <label class="label-tech">NICKNAME</label><input type="text" id="prof-nick" class="input-field">
-                    <div style="display:flex; gap:10px;">
-                        <div style="flex:1;"><label class="label-tech">NOMBRE</label><input type="text" id="prof-name" class="input-field"></div>
-                        <div style="flex:1;"><label class="label-tech">APELLIDOS</label><input type="text" id="prof-surname" class="input-field"></div>
-                    </div>
+                    <label class="label-tech">NOMBRE</label><input type="text" id="prof-name" class="input-field">
+                    <label class="label-tech">APELLIDOS</label><input type="text" id="prof-surname" class="input-field">
                     <label class="label-tech">DIRECCIÓN</label><input type="text" id="prof-address" class="input-field">
-                    
                     <div style="margin-top:20px; border-top:1px solid #333; padding-top:10px;">
                         <label class="label-tech">CAMBIAR FOTO</label>
-                        <label for="profile-img-upload" class="custom-file-upload">
-                            <i class="fa-solid fa-camera"></i> CAMBIAR FOTO
-                        </label>
+                        <label for="profile-img-upload" class="custom-file-upload"><i class="fa-solid fa-camera"></i> CAMBIAR FOTO</label>
                         <input type="file" id="profile-img-upload" accept="image/*">
                     </div>
-                    
-                    <button onclick="saveProfile()" class="btn-action full-width btn-green" style="margin-top:20px;">GUARDAR FICHA</button>
+                    <button onclick="saveProfile()" class="btn-action full-width btn-green" style="margin-top:20px;">GUARDAR</button>
                 </div>
-                <div class="history-panel"><h3 class="text-gold">HISTORIAL</h3><table class="tech-table"><thead><tr><th>CÓDIGO</th><th>TOTAL</th><th>ESTADO</th></tr></thead><tbody id="history-body"></tbody></table></div>
+                <div class="history-panel"><h3 class="text-gold">TUS PEDIDOS</h3><table class="tech-table"><tbody id="history-body"></tbody></table></div>
             </div>
         </div>
 
@@ -149,19 +121,20 @@
             <div class="section-title"><h2 class="gothic-title">PANEL DE MANDO LOGÍSTICO</h2></div>
             
             <div class="admin-nav-tabs">
-                <button class="admin-tab active" onclick="switchAdminTab('add')" id="btn-adm-add">AÑADIR PRODUCTO</button>
-                <button class="admin-tab" onclick="switchAdminTab('delete')" id="btn-adm-del">GESTIONAR / ELIMINAR</button>
+                <button class="admin-tab active" onclick="switchAdminTab('add')" id="btn-adm-add">AÑADIR</button>
+                <button class="admin-tab" onclick="switchAdminTab('delete')" id="btn-adm-del">GESTIONAR</button>
+                <button class="admin-tab" onclick="switchAdminTab('orders')" id="btn-adm-orders">PEDIDOS</button>
             </div>
 
             <div id="admin-view-add" class="admin-dashboard">
                 <div class="admin-card">
-                    <div class="admin-header"><i class="fa-solid fa-cloud-arrow-up"></i> NUEVO ACTIVO</div>
+                    <div class="admin-header"><i class="fa-solid fa-plus"></i> NUEVO ACTIVO</div>
                     <div class="form-grid">
                         <div class="form-group span-2"><label>NOMBRE</label><input type="text" id="new-name" class="input-field"></div>
                         <div class="form-group"><label>PRECIO (€)</label><input type="number" id="new-price" class="input-field"></div>
                         <div class="form-group"><label>STOCK</label><input type="number" id="new-stock" class="input-field"></div>
                         
-                        <div class="form-group span-2" style="border:1px solid #333; padding:15px; margin-top:10px; background:#111;">
+                        <div class="form-group span-2" style="background:#111; padding:15px; border:1px solid #333;">
                             <label class="text-gold" style="font-size:0.9rem;">CLASIFICACIÓN TÁCTICA</label>
                             <label class="label-tech">1. ERA</label><select id="new-era" class="input-field" onchange="updateFactionSelect()"></select>
                             <label class="label-tech">2. FACCIÓN</label><select id="new-faction" class="input-field" onchange="updateSubFactionSelect()" disabled></select>
@@ -169,11 +142,11 @@
                         </div>
 
                         <div class="form-group span-2">
-                            <label>IMAGEN DEL ACTIVO</label>
+                            <label>IMÁGENES (PUEDES SELECCIONAR VARIAS)</label>
                             <label for="new-img-file" class="custom-file-upload" id="label-new-img">
-                                <i class="fa-solid fa-cloud-arrow-up"></i> SELECCIONAR IMAGEN
+                                <i class="fa-solid fa-cloud-arrow-up"></i> SELECCIONAR FOTOS
                             </label>
-                            <input type="file" id="new-img-file" accept="image/*" onchange="document.getElementById('label-new-img').innerText = 'ARCHIVO: ' + this.files[0].name">
+                            <input type="file" id="new-img-file" accept="image/*" multiple onchange="document.getElementById('label-new-img').innerText = this.files.length + ' ARCHIVOS SELECCIONADOS'">
                         </div>
                         <div class="form-group span-2"><label>DESCRIPCIÓN</label><textarea id="new-desc" class="input-field" rows="3"></textarea></div>
                     </div>
@@ -184,8 +157,15 @@
             <div id="admin-view-delete" class="admin-dashboard hidden">
                 <div class="admin-card full-width">
                     <div class="admin-header"><i class="fa-solid fa-list-check"></i> CATÁLOGO DE ACTIVOS</div>
-                    <div id="admin-delete-list" style="padding: 20px;">
-                        <p style="color:#666;">Cargando inventario...</p>
+                    <div id="admin-delete-list" style="padding: 20px;"><p style="color:#666;">Cargando...</p></div>
+                </div>
+            </div>
+
+            <div id="admin-view-orders" class="admin-dashboard hidden">
+                <div class="admin-card full-width">
+                    <div class="admin-header"><i class="fa-solid fa-box-open"></i> GESTIÓN DE ENVÍOS</div>
+                    <div id="admin-orders-list" style="padding: 20px;">
+                        <p style="color:#666;">Cargando lista de pedidos...</p>
                     </div>
                 </div>
             </div>
@@ -197,10 +177,14 @@
         <div class="modal-box product-modal-box">
             <button onclick="closeProductModal()" class="close-modal-btn"><i class="fa-solid fa-xmark"></i></button>
             <div class="detail-layout">
-                <img id="detail-img" src="" class="detail-img">
+                <div class="gallery-container">
+                    <img id="detail-img" src="" class="detail-img-main">
+                    <div id="detail-thumbnails" class="thumbnail-row"></div>
+                </div>
+                
                 <div class="detail-info">
                     <h2 id="detail-name" class="gothic-title text-gold" style="font-size:1.5rem;"></h2>
-                    <div id="detail-breadcrumbs" class="text-small" style="color:#666; margin-bottom:15px;"></div>
+                    <div id="detail-breadcrumbs" class="text-small" style="color:#666;"></div>
                     <div style="flex:1; overflow-y:auto; margin-bottom:20px; border-top:1px solid #333; padding-top:10px;">
                         <p id="detail-desc" style="color:#ccc; line-height:1.5; font-size:0.9rem;"></p>
                     </div>
@@ -213,36 +197,32 @@
             </div>
         </div>
     </div>
-
+    
     <div id="payment-modal" class="modal-overlay hidden">
-        <div class="modal-box" style="text-align: center; border: 2px solid var(--gold-main);">
-            <div style="font-size: 3rem; color: var(--gold-main); margin-bottom: 20px;"><i class="fa-solid fa-medal"></i></div>
-            <h2 class="gothic-title" style="color: #fff; margin-bottom: 10px;">¡ENHORABUENA!</h2>
-            <p style="color: #ccc; margin-bottom: 20px;">Tu pedido ha sido registrado.</p>
-            <div style="background: #111; padding: 20px; border: 1px dashed var(--gold-dim); margin-bottom: 20px;">
-                <p style="color: var(--gold-main); font-weight: bold; margin-bottom: 5px;">REALIZAR PAGO BIZUM A:</p>
-                <p style="color: #fff; font-size: 1.2rem; font-weight:900;">+34 600 000 000</p>
-            </div>
-            <button onclick="closePaymentModal()" class="btn-action full-width btn-green">ENTENDIDO</button>
+        <div class="modal-box" style="text-align:center; border:2px solid var(--gold-main); background:#111; padding:40px;">
+            <i class="fa-solid fa-check-circle" style="font-size:3rem; color:var(--gold-main); margin-bottom:20px;"></i>
+            <h2 class="gothic-title">PEDIDO REGISTRADO</h2>
+            <p style="color:#ccc;">Realiza tu pago por Bizum al:</p>
+            <h3 class="text-gold" style="font-size:1.5rem;">+34 600 000 000</h3>
+            <button onclick="closePaymentModal()" class="btn-action btn-green full-width">ENTENDIDO</button>
         </div>
     </div>
 
     <div id="login-screen" class="hidden">
         <div class="login-card" style="background:#111; border:1px solid var(--gold-main); padding:40px; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); z-index:3000;">
-            <div style="text-align: right;"><button onclick="closeLogin()" class="btn-text text-red">X</button></div>
-            <div class="tabs-container"><button id="tab-login" class="tab-btn active" onclick="switchTab('login')">LOGIN</button><button id="tab-signup" class="tab-btn" onclick="switchTab('signup')">SIGN UP</button></div>
-            <div id="form-login" class="auth-form"><input type="email" id="login-email" class="input-field" placeholder="Email"><input type="password" id="login-pass" class="input-field" placeholder="Password"><button onclick="authLogin()" class="btn-action full-width btn-gold">ACCEDER</button></div>
-            <div id="form-signup" class="auth-form hidden"><input type="email" id="reg-email" class="input-field" placeholder="Email"><input type="password" id="reg-pass" class="input-field" placeholder="Password"><button onclick="authRegister()" class="btn-action full-width btn-green">CREAR</button></div>
-            <p id="login-error" class="text-red" style="margin-top:10px;"></p>
+            <div style="text-align:right;"><button onclick="closeLogin()" class="text-red btn-text">X</button></div>
+            <h2 class="text-gold" style="text-align:center;">ACCESO</h2>
+            <input type="email" id="login-email" class="input-field" placeholder="Email">
+            <input type="password" id="login-pass" class="input-field" placeholder="Password">
+            <button onclick="authLogin()" class="btn-action btn-gold full-width">ENTRAR</button>
         </div>
     </div>
 
-    <script src="config.js"></script>
-    <script src="lang.js"></script>
-    <script src="auth.js"></script>
-    <script src="store.js"></script>
-    <script src="admin.js"></script>
-    <script src="app.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/lang.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/store.js"></script>
+    <script src="js/admin.js"></script>
+    <script src="js/app.js"></script>
 </body>
 </html>
-
