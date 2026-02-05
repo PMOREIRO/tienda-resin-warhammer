@@ -50,7 +50,6 @@ function renderStore() {
 
     filtered.forEach(p => {
         const isOut = p.stock<=0;
-        // Soporte para array de imágenes o string único
         const mainImg = Array.isArray(p.img) ? p.img[0] : (p.img || "https://via.placeholder.com/400?text=NO+IMG");
         
         grid.innerHTML += `
@@ -116,7 +115,7 @@ window.openProductModal = function(id) {
 
 window.closeProductModal = function() { document.getElementById('product-detail-modal').classList.add('hidden'); }
 
-// --- CARRITO (IGUAL QUE ANTES) ---
+// --- CARRITO ---
 window.addToCart=function(id){ if(!currentUser){openLogin();return;} const p=products.find(i=>i.id===id),ex=cart.find(i=>i.id===id); if(ex&&ex.qty+1>p.stock)return alert("Stock tope"); if(ex)ex.qty++;else cart.push({...p,qty:1}); updateMiniCartUI(); }
 function updateMiniCartUI(){ document.getElementById('cart-count').innerText=cart.reduce((a,b)=>a+b.qty,0); document.getElementById('mini-cart-total').innerText=cart.reduce((a,b)=>a+(b.price*b.qty),0).toFixed(2)+"€"; const l=document.getElementById('mini-cart-items'); if(cart.length===0)l.innerHTML='<p style="padding:10px">Vacío</p>'; else l.innerHTML=cart.map(i=>`<div class="mini-item"><span>${i.name}</span><span>x${i.qty}</span></div>`).join(''); }
 window.toggleMiniCart=function(){document.getElementById('mini-cart-dropdown').classList.toggle('hidden');}
