@@ -103,19 +103,58 @@
         <div id="view-profile" class="view-section hidden">
             <div class="profile-layout">
                 <div class="avatar-editor">
-                    <div style="text-align:center;"><img id="profile-avatar-big" src="" class="avatar-circle" style="width:100px; height:100px;"></div>
-                    <label class="label-tech">NICKNAME</label><input type="text" id="prof-nick" class="input-field">
-                    <label class="label-tech">NOMBRE</label><input type="text" id="prof-name" class="input-field">
-                    <label class="label-tech">APELLIDOS</label><input type="text" id="prof-surname" class="input-field">
-                    <label class="label-tech">DIRECCIÓN</label><input type="text" id="prof-address" class="input-field">
-                    <div style="margin-top:20px; border-top:1px solid #333; padding-top:10px;">
-                        <label class="label-tech">CAMBIAR FOTO</label>
+                    <div style="text-align:center;">
+                        <img id="profile-avatar-big" src="" class="avatar-circle" style="width:100px; height:100px; border:2px solid var(--gold-main);">
+                    </div>
+                    
+                    <h3 class="text-gold" style="border-bottom:1px solid #333; margin:15px 0;">DATOS DEL OPERATIVO</h3>
+                    <div class="form-grid" style="padding:0; gap:10px;">
+                        <div><label class="label-tech">NICKNAME</label><input type="text" id="prof-nick" class="input-field"></div>
+                        <div><label class="label-tech">TELÉFONO</label><input type="text" id="prof-phone" class="input-field"></div>
+                        <div><label class="label-tech">NOMBRE</label><input type="text" id="prof-name" class="input-field"></div>
+                        <div><label class="label-tech">APELLIDOS</label><input type="text" id="prof-surname" class="input-field"></div>
+                    </div>
+
+                    <h3 class="text-gold" style="border-bottom:1px solid #333; margin:15px 0;">DIRECCIÓN DE ENVÍO</h3>
+                    <label class="label-tech">CALLE Y NÚMERO</label>
+                    <input type="text" id="prof-street" class="input-field" placeholder="C/ Ejemplo, 123, 4ºA">
+                    
+                    <div class="form-grid" style="padding:0; gap:10px;">
+                        <div><label class="label-tech">CIUDAD</label><input type="text" id="prof-city" class="input-field"></div>
+                        <div><label class="label-tech">CÓDIGO POSTAL</label><input type="text" id="prof-zip" class="input-field"></div>
+                        <div class="span-2"><label class="label-tech">PROVINCIA / ESTADO</label><input type="text" id="prof-province" class="input-field"></div>
+                    </div>
+
+                    <div style="margin-top:15px; border-top:1px solid #333; padding-top:10px;">
+                        <label class="label-tech">FOTO DE PERFIL</label>
                         <label for="profile-img-upload" class="custom-file-upload"><i class="fa-solid fa-camera"></i> CAMBIAR FOTO</label>
                         <input type="file" id="profile-img-upload" accept="image/*">
                     </div>
-                    <button onclick="saveProfile()" class="btn-action full-width btn-green" style="margin-top:20px;">GUARDAR</button>
+                    
+                    <button onclick="saveProfile()" class="btn-action full-width btn-green" style="margin-top:20px;">GUARDAR DATOS</button>
+
+                    <h3 class="text-gold" style="border-bottom:1px solid #333; margin:25px 0 15px 0;">SEGURIDAD</h3>
+                    <label class="label-tech">NUEVA CONTRASEÑA</label>
+                    <div style="display:flex; gap:10px;">
+                        <input type="password" id="prof-new-pass" class="input-field" placeholder="Mínimo 6 caracteres">
+                        <button onclick="changeUserPassword()" class="btn-action btn-gold" style="width:auto;">CAMBIAR</button>
+                    </div>
+
+                    <div style="margin-top:30px; border-top:1px solid var(--tech-red); padding-top:15px;">
+                        <p style="color:#666; font-size:0.8rem; margin-bottom:10px;">ZONA DE PELIGRO</p>
+                        <button onclick="deleteUserAccount()" class="btn-text text-red" style="font-size:0.9rem;">
+                            <i class="fa-solid fa-skull"></i> DARME DE BAJA (ELIMINAR CUENTA)
+                        </button>
+                    </div>
                 </div>
-                <div class="history-panel"><h3 class="text-gold">TUS PEDIDOS</h3><table class="tech-table"><tbody id="history-body"></tbody></table></div>
+
+                <div class="history-panel">
+                    <h3 class="text-gold">HISTORIAL DE PEDIDOS</h3>
+                    <table class="tech-table">
+                        <thead><tr><th>CÓDIGO</th><th>TOTAL</th><th>ESTADO</th></tr></thead>
+                        <tbody id="history-body"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
@@ -225,3 +264,4 @@
     <script src="app.js"></script>
 </body>
 </html>
+
