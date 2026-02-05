@@ -1,5 +1,3 @@
-// --- ADMIN JS ---
-
 function initAdminSelects() {
     const eraSelect = document.getElementById('new-era');
     if (!eraSelect) return;
@@ -68,11 +66,11 @@ async function adminUpload() {
 
         btn.innerText = "GUARDANDO... 💾";
         
-        // Guardar en Firebase (img ahora puede ser un array)
+        // Guardar en Firebase
         await db.collection("products").add({ 
             name, price, stock, description: desc,
             era, faction, subfaction, 
-            img: imageUrls, // Guardamos todas
+            img: imageUrls, // Array de fotos
             createdAt: Date.now()
         });
 
@@ -91,7 +89,6 @@ async function adminUpload() {
     }
 }
 
-// CONTROL PESTAÑAS
 function switchAdminTab(tab) {
     document.querySelectorAll('.admin-tab').forEach(b => b.classList.remove('active'));
     document.getElementById('btn-adm-' + tab).classList.add('active');
@@ -108,7 +105,7 @@ function switchAdminTab(tab) {
         renderDeleteList();
     } else if (tab === 'orders') {
         document.getElementById('admin-view-orders').classList.remove('hidden');
-        loadAllOrders(); // Cargar pedidos
+        loadAllOrders(); 
     }
 }
 
@@ -134,7 +131,6 @@ function renderDeleteList() {
             for (const [fName, prods] of Object.entries(facs)) {
                 html += `<div class="manage-faction-header" onclick="this.nextElementSibling.classList.toggle('open')">${fName} (${prods.length})</div><div class="manage-faction-content">`;
                 html += prods.map(p => {
-                    // Mostrar primera imagen si hay array
                     const img = Array.isArray(p.img) ? p.img[0] : p.img; 
                     return `<div class="delete-item"><div style="display:flex;align-items:center;"><img src="${img}" style="width:40px;height:40px;margin-right:10px;"><div><b>${p.name}</b><br><span style="font-size:0.8rem;color:#666;">Stock: ${p.stock}</span></div></div><button onclick="deleteProduct('${p.id}')" class="text-red btn-text"><i class="fa-solid fa-trash"></i></button></div>`;
                 }).join('');
@@ -150,10 +146,10 @@ function deleteProduct(id) {
     if(confirm("¿Eliminar?")) db.collection("products").doc(id).delete().then(()=>renderDeleteList());
 }
 
-// --- GESTIÓN DE PEDIDOS GLOBAL ---
+// --- GESTIÓN PEDIDOS ---
 async function loadAllOrders() {
     const container = document.getElementById('admin-orders-list');
-    container.innerHTML = "<p>Rastreando pedidos en la galaxia...</p>";
+    container.innerHTML = "<p>Rastreando pedidos...</p>";
 
     try {
         const snapshot = await db.collection("users").get();
@@ -163,41 +159,25 @@ async function loadAllOrders() {
             const userData = doc.data();
             if (userData.orders && userData.orders.length > 0) {
                 userData.orders.forEach((order, index) => {
-                    // Añadimos datos extra para poder localizarlo luego
-                    allOrders.push({
-                        ...order,
-                        userId: doc.id,
-                        userEmail: userData.email,
-                        orderIndex: index // Posición en el array del usuario
-                    });
+                    allOrders.push({ ...order, userId: doc.id, userEmail: userData.email, orderIndex: index });
                 });
             }
         });
 
-        // Ordenar: Más nuevos primero (la fecha suele ser string, cuidado, idealmente usar timestamps)
         allOrders.reverse();
 
-        if (allOrders.length === 0) {
-            container.innerHTML = "<p>No hay pedidos pendientes.</p>";
-            return;
-        }
+        if (allOrders.length === 0) { container.innerHTML = "<p>No hay pedidos.</p>"; return; }
 
         container.innerHTML = allOrders.map(o => `
             <div class="admin-order-card">
-                <div class="order-header">
-                    <span class="text-gold">#${o.code}</span>
-                    <span>${o.date}</span>
-                    <span style="color:#888;">${o.userEmail}</span>
-                </div>
-                <div class="order-items">
-                    ${o.items.map(i => `<div>${i.qty}x ${i.name} (${i.price}€)</div>`).join('')}
-                </div>
+                <div class="order-header"><span class="text-gold">#${o.code}</span><span>${o.date}</span><span style="color:#888;">${o.userEmail}</span></div>
+                <div class="order-items">${o.items.map(i => `<div>${i.qty}x ${i.name} (${i.price}€)</div>`).join('')}</div>
                 <div class="order-footer">
                     <span class="text-gold" style="font-size:1.2rem;">TOTAL: ${o.total}€</span>
                     <select class="status-select" onchange="updateOrderStatus('${o.userId}', ${o.orderIndex}, this.value)">
-                        <option value="PENDING (BIZUM)" ${o.status.includes('PENDING')?'selected':''}>PENDIENTE PAGO</option>
-                        <option value="PAGO RECIBIDO / EN COLA" ${o.status.includes('RECIBIDO')?'selected':''}>PAGO RECIBIDO</option>
-                        <option value="EN PROCESO DE IMPRESIÓN" ${o.status.includes('IMPRESIÓN')?'selected':''}>IMPRIMIENDO</option>
+                        <option value="PENDING (BIZUM)" ${o.status.includes('PENDING')?'selected':''}>PENDIENTE</option>
+                        <option value="PAGO RECIBIDO" ${o.status.includes('RECIBIDO')?'selected':''}>PAGADO</option>
+                        <option value="IMPRIMIENDO" ${o.status.includes('IMPRIMIENDO')?'selected':''}>IMPRIMIENDO</option>
                         <option value="ENVIADO" ${o.status.includes('ENVIADO')?'selected':''}>ENVIADO</option>
                         <option value="CANCELADO" ${o.status.includes('CANCELADO')?'selected':''}>CANCELADO</option>
                     </select>
@@ -205,33 +185,22 @@ async function loadAllOrders() {
             </div>
         `).join('');
 
-    } catch (e) {
-        container.innerHTML = "<p style='color:red'>Error cargando pedidos: " + e.message + "</p>";
-    }
+    } catch (e) { container.innerHTML = "<p style='color:red'>Error: " + e.message + "</p>"; }
 }
 
-// ACTUALIZAR ESTADO DE PEDIDO
 async function updateOrderStatus(userId, orderIndex, newStatus) {
     try {
         const userRef = db.collection("users").doc(userId);
-        
-        // Necesitamos leer el usuario, modificar el array y volver a guardar
         await db.runTransaction(async (transaction) => {
             const doc = await transaction.get(userRef);
             if (!doc.exists) throw "Usuario no existe";
-            
             const userData = doc.data();
             const orders = userData.orders;
-            
-            // Actualizar el estado
             if (orders[orderIndex]) {
                 orders[orderIndex].status = newStatus;
                 transaction.update(userRef, { orders: orders });
             }
         });
-        
-        alert("✅ ESTADO ACTUALIZADO A: " + newStatus);
-    } catch (e) {
-        alert("❌ Error al actualizar: " + e.message);
-    }
+        alert("✅ ESTADO ACTUALIZADO");
+    } catch (e) { alert("❌ Error: " + e.message); }
 }
