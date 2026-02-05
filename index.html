@@ -7,7 +7,8 @@
     
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="css/style.css">
+    
+    <link rel="stylesheet" href="style.css">
 
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
@@ -19,7 +20,7 @@
 
     <header class="main-header">
         <div class="header-brand" onclick="window.location.reload()">
-            <img src="img/logo.png" alt="Logo" onerror="this.style.display='none'" class="logo-img">
+            <img src="logo.png" alt="Logo" onerror="this.style.display='none'" class="logo-img">
             <div class="brand-text">
                 <span class="warhammer-font">RESIN<span class="text-gold">3D</span>PRINTING</span>
                 <span class="subtitle-text">SUPPLY DROP</span>
@@ -118,7 +119,7 @@
         </div>
 
         <div id="view-admin" class="view-section hidden">
-            <div class="section-title"><h2 class="gothic-title">PANEL DE MANDO LOGÍSTICO</h2></div>
+            <div class="section-title"><h2 class="gothic-title">PANEL DE MANDO</h2></div>
             
             <div class="admin-nav-tabs">
                 <button class="admin-tab active" onclick="switchAdminTab('add')" id="btn-adm-add">AÑADIR</button>
@@ -135,22 +136,22 @@
                         <div class="form-group"><label>STOCK</label><input type="number" id="new-stock" class="input-field"></div>
                         
                         <div class="form-group span-2" style="background:#111; padding:15px; border:1px solid #333;">
-                            <label class="text-gold" style="font-size:0.9rem;">CLASIFICACIÓN TÁCTICA</label>
+                            <label class="text-gold">CLASIFICACIÓN</label>
                             <label class="label-tech">1. ERA</label><select id="new-era" class="input-field" onchange="updateFactionSelect()"></select>
                             <label class="label-tech">2. FACCIÓN</label><select id="new-faction" class="input-field" onchange="updateSubFactionSelect()" disabled></select>
                             <label class="label-tech">3. EJÉRCITO</label><select id="new-subfaction" class="input-field" disabled></select>
                         </div>
 
                         <div class="form-group span-2">
-                            <label>IMÁGENES (PUEDES SELECCIONAR VARIAS)</label>
+                            <label>IMÁGENES (PUEDES SUBIR VARIAS)</label>
                             <label for="new-img-file" class="custom-file-upload" id="label-new-img">
-                                <i class="fa-solid fa-cloud-arrow-up"></i> SELECCIONAR FOTOS
+                                <i class="fa-solid fa-images"></i> SELECCIONAR FOTOS
                             </label>
-                            <input type="file" id="new-img-file" accept="image/*" multiple onchange="document.getElementById('label-new-img').innerText = this.files.length + ' ARCHIVOS SELECCIONADOS'">
+                            <input type="file" id="new-img-file" accept="image/*" multiple onchange="document.getElementById('label-new-img').innerText = this.files.length + ' ARCHIVOS LISTOS'">
                         </div>
                         <div class="form-group span-2"><label>DESCRIPCIÓN</label><textarea id="new-desc" class="input-field" rows="3"></textarea></div>
                     </div>
-                    <button onclick="adminUpload()" class="btn-action btn-green full-width">REGISTRAR EN BASE DE DATOS</button>
+                    <button onclick="adminUpload()" class="btn-action btn-green full-width">REGISTRAR</button>
                 </div>
             </div>
 
@@ -163,10 +164,8 @@
 
             <div id="admin-view-orders" class="admin-dashboard hidden">
                 <div class="admin-card full-width">
-                    <div class="admin-header"><i class="fa-solid fa-box-open"></i> GESTIÓN DE ENVÍOS</div>
-                    <div id="admin-orders-list" style="padding: 20px;">
-                        <p style="color:#666;">Cargando lista de pedidos...</p>
-                    </div>
+                    <div class="admin-header"><i class="fa-solid fa-truck-fast"></i> GESTIÓN DE ENVÍOS</div>
+                    <div id="admin-orders-list" style="padding: 20px;"><p>Buscando pedidos...</p></div>
                 </div>
             </div>
         </div>
@@ -218,11 +217,11 @@
         </div>
     </div>
 
-    <script src="js/config.js"></script>
-    <script src="js/lang.js"></script>
-    <script src="js/auth.js"></script>
-    <script src="js/store.js"></script>
-    <script src="js/admin.js"></script>
-    <script src="js/app.js"></script>
+    <script src="config.js"></script>
+    <script src="lang.js"></script>
+    <script src="auth.js"></script>
+    <script src="store.js"></script>
+    <script src="admin.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
