@@ -1,9 +1,19 @@
+// --- ADMIN JS ---
+
 function initAdminSelects() {
     const eraSelect = document.getElementById('new-era');
     if (!eraSelect) return;
+    
+    // Verificación de seguridad: ¿Existe ARMY_DATA?
+    if (typeof ARMY_DATA === 'undefined') {
+        console.error("ARMY_DATA no cargado. Reintentando...");
+        setTimeout(initAdminSelects, 500); // Reintentar en 0.5 seg
+        return;
+    }
+
     eraSelect.innerHTML = '<option value="">-- SELECCIONAR ERA --</option>';
-    if (typeof ARMY_DATA !== 'undefined') {
-        for (const era in ARMY_DATA) eraSelect.innerHTML += `<option value="${era}">${era}</option>`;
+    for (const era in ARMY_DATA) {
+        eraSelect.innerHTML += `<option value="${era}">${era}</option>`;
     }
 }
 
@@ -11,26 +21,45 @@ function updateFactionSelect() {
     const era = document.getElementById('new-era').value;
     const fs = document.getElementById('new-faction');
     const ss = document.getElementById('new-subfaction');
+    
     fs.innerHTML = '<option value="">-- SELECCIONAR --</option>';
     ss.innerHTML = ''; ss.disabled = true;
+
     if (era && ARMY_DATA[era]) {
         fs.disabled = false;
-        Object.keys(ARMY_DATA[era]).forEach(f => fs.innerHTML += `<option value="${f}">${f}</option>`);
-    } else fs.disabled = true;
+        Object.keys(ARMY_DATA[era]).forEach(f => {
+            fs.innerHTML += `<option value="${f}">${f}</option>`;
+        });
+    } else {
+        fs.disabled = true;
+    }
 }
 
 function updateSubFactionSelect() {
     const era = document.getElementById('new-era').value;
     const fac = document.getElementById('new-faction').value;
     const ss = document.getElementById('new-subfaction');
+    
     ss.innerHTML = '<option value="">-- SELECCIONAR --</option>';
+
     if (era && fac && ARMY_DATA[era][fac]) {
         ss.disabled = false;
-        ARMY_DATA[era][fac].forEach(a => ss.innerHTML += `<option value="${a}">${a}</option>`);
-    } else ss.disabled = true;
+        // Comprobar si es un array (tiene subfacciones)
+        if (Array.isArray(ARMY_DATA[era][fac])) {
+            ARMY_DATA[era][fac].forEach(a => {
+                ss.innerHTML += `<option value="${a}">${a}</option>`;
+            });
+        } else {
+            // Si no tiene subfacciones, deshabilitar
+            ss.innerHTML = '<option value="">N/A</option>';
+            ss.disabled = true;
+        }
+    } else {
+        ss.disabled = true;
+    }
 }
 
-// SUBIDA MÚLTIPLE DE IMÁGENES
+// SUBIDA DE PRODUCTO (MULTIPLES FOTOS)
 async function adminUpload() {
     const name = document.getElementById('new-name').value;
     const price = parseFloat(document.getElementById('new-price').value);
@@ -42,16 +71,15 @@ async function adminUpload() {
     const fileInput = document.getElementById('new-img-file');
     const files = fileInput.files;
 
-    if (!name || !price || !era) return alert("❌ Faltan datos.");
-    if (files.length === 0) return alert("❌ Falta imagen.");
+    if (!name || !price || !era) return alert("❌ Faltan datos (Nombre, Precio, Era).");
+    if (files.length === 0) return alert("❌ Falta seleccionar imagen.");
 
     const btn = document.querySelector("button[onclick='adminUpload()']");
     const txtOrig = btn.innerText;
-    btn.innerText = "SUBIENDO IMÁGENES... ☁️";
+    btn.innerText = "SUBIENDO... ☁️";
     btn.disabled = true;
 
     try {
-        // Subir todas las fotos a Cloudinary una por una
         const uploadPromises = Array.from(files).map(file => {
             const formData = new FormData();
             formData.append("file", file);
@@ -62,25 +90,24 @@ async function adminUpload() {
         });
 
         const results = await Promise.all(uploadPromises);
-        const imageUrls = results.map(data => data.secure_url); // Array de links
+        const imageUrls = results.map(data => data.secure_url);
 
         btn.innerText = "GUARDANDO... 💾";
         
-        // Guardar en Firebase
         await db.collection("products").add({ 
             name, price, stock, description: desc,
             era, faction, subfaction, 
-            img: imageUrls, // Array de fotos
+            img: imageUrls, 
             createdAt: Date.now()
         });
 
-        alert("✅ PRODUCTO REGISTRADO.");
+        alert("✅ PRODUCTO CREADO.");
         document.getElementById('new-name').value = "";
         document.getElementById('new-price').value = "";
         document.getElementById('new-stock').value = "";
         document.getElementById('new-desc').value = "";
         fileInput.value = "";
-        document.getElementById('label-new-img').innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> SELECCIONAR FOTOS';
+        document.getElementById('label-new-img').innerText = "SELECCIONAR FOTOS";
 
     } catch (e) {
         alert("Error: " + e.message);
@@ -89,6 +116,7 @@ async function adminUpload() {
     }
 }
 
+// PESTAÑAS ADMIN
 function switchAdminTab(tab) {
     document.querySelectorAll('.admin-tab').forEach(b => b.classList.remove('active'));
     document.getElementById('btn-adm-' + tab).classList.add('active');
@@ -105,17 +133,17 @@ function switchAdminTab(tab) {
         renderDeleteList();
     } else if (tab === 'orders') {
         document.getElementById('admin-view-orders').classList.remove('hidden');
-        loadAllOrders(); 
+        loadAllOrders();
     }
 }
 
+// ELIMINAR (LISTA ACORDEÓN)
 function renderDeleteList() {
     const container = document.getElementById('admin-delete-list');
     container.innerHTML = "<p>Cargando...</p>";
     db.collection("products").get().then(snap => {
         const items = [];
         snap.forEach(doc => items.push({id: doc.id, ...doc.data()}));
-        
         if(items.length===0) { container.innerHTML="<p>Vacío.</p>"; return; }
 
         const tree = {};
@@ -131,8 +159,8 @@ function renderDeleteList() {
             for (const [fName, prods] of Object.entries(facs)) {
                 html += `<div class="manage-faction-header" onclick="this.nextElementSibling.classList.toggle('open')">${fName} (${prods.length})</div><div class="manage-faction-content">`;
                 html += prods.map(p => {
-                    const img = Array.isArray(p.img) ? p.img[0] : p.img; 
-                    return `<div class="delete-item"><div style="display:flex;align-items:center;"><img src="${img}" style="width:40px;height:40px;margin-right:10px;"><div><b>${p.name}</b><br><span style="font-size:0.8rem;color:#666;">Stock: ${p.stock}</span></div></div><button onclick="deleteProduct('${p.id}')" class="text-red btn-text"><i class="fa-solid fa-trash"></i></button></div>`;
+                    const img = Array.isArray(p.img) ? p.img[0] : p.img;
+                    return `<div class="delete-item"><div style="display:flex;align-items:center;"><img src="${img}" style="width:40px;height:40px;object-fit:cover;margin-right:10px;"><div><b>${p.name}</b><br><span style="font-size:0.8rem;color:#666;">Stock: ${p.stock}</span></div></div><button onclick="deleteProduct('${p.id}')" class="text-red btn-text"><i class="fa-solid fa-trash"></i></button></div>`;
                 }).join('');
                 html += `</div>`;
             }
@@ -146,61 +174,49 @@ function deleteProduct(id) {
     if(confirm("¿Eliminar?")) db.collection("products").doc(id).delete().then(()=>renderDeleteList());
 }
 
-// --- GESTIÓN PEDIDOS ---
+// PEDIDOS (NUEVO)
 async function loadAllOrders() {
     const container = document.getElementById('admin-orders-list');
-    container.innerHTML = "<p>Rastreando pedidos...</p>";
-
+    container.innerHTML = "<p>Buscando pedidos...</p>";
     try {
         const snapshot = await db.collection("users").get();
         let allOrders = [];
-
         snapshot.forEach(doc => {
-            const userData = doc.data();
-            if (userData.orders && userData.orders.length > 0) {
-                userData.orders.forEach((order, index) => {
-                    allOrders.push({ ...order, userId: doc.id, userEmail: userData.email, orderIndex: index });
-                });
+            const d = doc.data();
+            if(d.orders && d.orders.length > 0) {
+                d.orders.forEach((o, idx) => allOrders.push({...o, uid: doc.id, email: d.email, idx: idx}));
             }
         });
-
-        allOrders.reverse();
-
-        if (allOrders.length === 0) { container.innerHTML = "<p>No hay pedidos.</p>"; return; }
-
+        allOrders.reverse(); // Nuevos primero
+        
+        if(allOrders.length === 0) { container.innerHTML="<p>No hay pedidos.</p>"; return; }
+        
         container.innerHTML = allOrders.map(o => `
             <div class="admin-order-card">
-                <div class="order-header"><span class="text-gold">#${o.code}</span><span>${o.date}</span><span style="color:#888;">${o.userEmail}</span></div>
-                <div class="order-items">${o.items.map(i => `<div>${i.qty}x ${i.name} (${i.price}€)</div>`).join('')}</div>
+                <div class="order-header"><span class="text-gold">#${o.code}</span><span>${o.date}</span><span style="color:#888">${o.email}</span></div>
+                <div class="order-items">${o.items.map(i => `<div>${i.qty}x ${i.name}</div>`).join('')}</div>
                 <div class="order-footer">
-                    <span class="text-gold" style="font-size:1.2rem;">TOTAL: ${o.total}€</span>
-                    <select class="status-select" onchange="updateOrderStatus('${o.userId}', ${o.orderIndex}, this.value)">
-                        <option value="PENDING (BIZUM)" ${o.status.includes('PENDING')?'selected':''}>PENDIENTE</option>
-                        <option value="PAGO RECIBIDO" ${o.status.includes('RECIBIDO')?'selected':''}>PAGADO</option>
-                        <option value="IMPRIMIENDO" ${o.status.includes('IMPRIMIENDO')?'selected':''}>IMPRIMIENDO</option>
+                    <span class="text-gold">${o.total}€</span>
+                    <select class="status-select" onchange="updateOrderStatus('${o.uid}', ${o.idx}, this.value)">
+                        <option value="PENDING" ${o.status.includes('PENDING')?'selected':''}>PENDIENTE</option>
+                        <option value="PAGADO" ${o.status.includes('PAGADO')?'selected':''}>PAGADO</option>
                         <option value="ENVIADO" ${o.status.includes('ENVIADO')?'selected':''}>ENVIADO</option>
-                        <option value="CANCELADO" ${o.status.includes('CANCELADO')?'selected':''}>CANCELADO</option>
                     </select>
                 </div>
             </div>
         `).join('');
-
-    } catch (e) { container.innerHTML = "<p style='color:red'>Error: " + e.message + "</p>"; }
+    } catch(e) { container.innerHTML="Error: "+e.message; }
 }
 
-async function updateOrderStatus(userId, orderIndex, newStatus) {
+async function updateOrderStatus(uid, idx, status) {
     try {
-        const userRef = db.collection("users").doc(userId);
-        await db.runTransaction(async (transaction) => {
-            const doc = await transaction.get(userRef);
-            if (!doc.exists) throw "Usuario no existe";
-            const userData = doc.data();
-            const orders = userData.orders;
-            if (orders[orderIndex]) {
-                orders[orderIndex].status = newStatus;
-                transaction.update(userRef, { orders: orders });
-            }
+        const ref = db.collection("users").doc(uid);
+        await db.runTransaction(async (t) => {
+            const doc = await t.get(ref);
+            const data = doc.data();
+            data.orders[idx].status = status;
+            t.update(ref, {orders: data.orders});
         });
-        alert("✅ ESTADO ACTUALIZADO");
-    } catch (e) { alert("❌ Error: " + e.message); }
+        alert("Estado actualizado.");
+    } catch(e) { alert("Error: "+e.message); }
 }
