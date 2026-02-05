@@ -13,6 +13,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <script type="text/javascript"> (function(){ emailjs.init("eOQ8QN3nblcL7Y9KV"); })(); </script>
 </head>
@@ -143,11 +144,11 @@
                         </div>
 
                         <div class="form-group span-2">
-                            <label>IMÁGENES (PUEDES SUBIR VARIAS)</label>
+                            <label>IMÁGENES (VARIAS)</label>
                             <label for="new-img-file" class="custom-file-upload" id="label-new-img">
                                 <i class="fa-solid fa-images"></i> SELECCIONAR FOTOS
                             </label>
-                            <input type="file" id="new-img-file" accept="image/*" multiple onchange="document.getElementById('label-new-img').innerText = this.files.length + ' ARCHIVOS LISTOS'">
+                            <input type="file" id="new-img-file" accept="image/*" multiple onchange="document.getElementById('label-new-img').innerText = this.files.length + ' ARCHIVOS'">
                         </div>
                         <div class="form-group span-2"><label>DESCRIPCIÓN</label><textarea id="new-desc" class="input-field" rows="3"></textarea></div>
                     </div>
@@ -157,14 +158,14 @@
 
             <div id="admin-view-delete" class="admin-dashboard hidden">
                 <div class="admin-card full-width">
-                    <div class="admin-header"><i class="fa-solid fa-list-check"></i> CATÁLOGO DE ACTIVOS</div>
+                    <div class="admin-header"><i class="fa-solid fa-list-check"></i> CATÁLOGO</div>
                     <div id="admin-delete-list" style="padding: 20px;"><p style="color:#666;">Cargando...</p></div>
                 </div>
             </div>
 
             <div id="admin-view-orders" class="admin-dashboard hidden">
                 <div class="admin-card full-width">
-                    <div class="admin-header"><i class="fa-solid fa-truck-fast"></i> GESTIÓN DE ENVÍOS</div>
+                    <div class="admin-header"><i class="fa-solid fa-truck-fast"></i> GESTIÓN ENVÍOS</div>
                     <div id="admin-orders-list" style="padding: 20px;"><p>Buscando pedidos...</p></div>
                 </div>
             </div>
@@ -180,7 +181,6 @@
                     <img id="detail-img" src="" class="detail-img-main">
                     <div id="detail-thumbnails" class="thumbnail-row"></div>
                 </div>
-                
                 <div class="detail-info">
                     <h2 id="detail-name" class="gothic-title text-gold" style="font-size:1.5rem;"></h2>
                     <div id="detail-breadcrumbs" class="text-small" style="color:#666;"></div>
