@@ -2,9 +2,11 @@
 let currentUser = null;
 
 document.addEventListener("DOMContentLoaded", () => {
+    // 1. Construir menú y cargar productos
     buildNavMenu();
     if (typeof loadProducts === "function") loadProducts();
     
+    // 2. Cerrar menús al hacer clic fuera
     window.onclick = function(event) {
         if (!event.target.matches('.avatar-circle')) {
             const dropdown = document.getElementById("user-dropdown");
@@ -14,16 +16,35 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    // 3. DETECTOR DE SESIÓN (AQUÍ ESTÁ LA CORRECCIÓN)
     if (auth) {
         auth.onAuthStateChanged((user) => {
             if (user) {
-                console.log("Usuario conectado: " + user.email);
+                console.log("Conectado como: " + user.email);
+                
                 db.collection("users").doc(user.uid).onSnapshot((doc) => {
                     if (doc.exists) {
                         currentUser = doc.data();
                         currentUser.uid = user.uid;
-                        if(currentUser.email === "pablomoreirocollado@gmail.com") currentUser.role = "admin";
+                        currentUser.email = user.email; // Aseguramos que el email viene del Auth
+                        
+                        // --- LLAVE MAESTRA (ADMIN SUPREMO) ---
+                        // Verificamos directamente el email de la sesión (user.email)
+                        // NO SOLO el de la base de datos
+                        if(user.email === "pablomoreirocollado@gmail.com") {
+                            console.log("/// ACCESO ADMIN CONCEDIDO ///");
+                            currentUser.role = "admin";
+                        }
+                        // -------------------------------------
+
                         updateUIProfile();
+                    } else {
+                        // Si el usuario existe en Auth pero no en DB (caso raro), lo creamos
+                        db.collection("users").doc(user.uid).set({
+                            email: user.email,
+                            role: (user.email === "pablomoreirocollado@gmail.com") ? "admin" : "user",
+                            orders: []
+                        });
                     }
                 });
             } else {
@@ -43,44 +64,52 @@ function renderGuestMode() {
 }
 
 function updateUIProfile() {
+    // 1. Ocultar botones de invitado
     document.getElementById('guest-buttons').classList.add('hidden');
     document.getElementById('user-display').classList.remove('hidden');
     
+    // 2. Cargar Avatar
     const avatarSrc = currentUser.avatar || "https://via.placeholder.com/150/000000/FFFFFF?text=USER";
     document.getElementById('header-avatar').src = avatarSrc;
     const bigAvatar = document.getElementById('profile-avatar-big');
     if(bigAvatar) bigAvatar.src = avatarSrc;
     
+    // 3. Nombre
     const displayName = currentUser.nick || currentUser.name || currentUser.email.split('@')[0];
     document.getElementById('dropdown-username').textContent = displayName.toUpperCase();
 
-    // RELLENAR CAMPOS DEL PERFIL (NUEVOS CAMPOS)
+    // 4. RELLENAR FORMULARIO PERFIL
     if (document.getElementById('prof-nick')) {
         document.getElementById('prof-nick').value = currentUser.nick || "";
         document.getElementById('prof-name').value = currentUser.name || "";
         document.getElementById('prof-surname').value = currentUser.surname || "";
         document.getElementById('prof-phone').value = currentUser.phone || "";
         
-        // Dirección Desglosada
+        // Dirección nueva
         const addr = currentUser.fullAddress || {};
         document.getElementById('prof-street').value = addr.street || "";
         document.getElementById('prof-city').value = addr.city || "";
         document.getElementById('prof-zip').value = addr.zip || "";
         document.getElementById('prof-province').value = addr.province || "";
         
-        // Compatibilidad hacia atrás (si solo tenía el campo antiguo)
+        // Compatibilidad vieja
         if (!addr.street && currentUser.address) {
             document.getElementById('prof-street').value = currentUser.address;
         }
     }
 
-    if (currentUser.role === 'admin') document.getElementById('admin-link').classList.remove('hidden');
-    else document.getElementById('admin-link').classList.add('hidden');
+    // 5. MOSTRAR BOTÓN DE ADMIN (CRÍTICO)
+    const adminLink = document.getElementById('admin-link');
+    if (currentUser.role === 'admin') {
+        adminLink.classList.remove('hidden');
+    } else {
+        adminLink.classList.add('hidden');
+    }
     
     renderHistory();
 }
 
-// GUARDAR PERFIL (ACTUALIZADO)
+// GUARDAR PERFIL
 function saveProfile() {
     if(!currentUser) return;
     
@@ -89,16 +118,14 @@ function saveProfile() {
     const surname = document.getElementById('prof-surname').value;
     const phone = document.getElementById('prof-phone').value;
     
-    // Objeto Dirección Completa
+    // Objeto dirección completo
     const fullAddress = {
         street: document.getElementById('prof-street').value,
         city: document.getElementById('prof-city').value,
         zip: document.getElementById('prof-zip').value,
         province: document.getElementById('prof-province').value
     };
-
-    // Dirección formateada para envíos rápidos
-    const formattedAddress = `${fullAddress.street}, ${fullAddress.zip} ${fullAddress.city} (${fullAddress.province})`;
+    const formattedAddress = `${fullAddress.street}, ${fullAddress.zip} ${fullAddress.city}`;
 
     const file = document.getElementById('profile-img-upload').files[0];
     const btn = document.querySelector("button[onclick='saveProfile()']");
@@ -108,10 +135,10 @@ function saveProfile() {
     const updateDB = (avatarUrl) => {
         db.collection("users").doc(currentUser.uid).update({ 
             avatar: avatarUrl, name, surname, phone, nick,
-            fullAddress: fullAddress, // Guardamos objeto
-            address: formattedAddress // Guardamos string para compatibilidad
+            fullAddress: fullAddress,
+            address: formattedAddress
         }).then(() => {
-            alert("✅ FICHA ACTUALIZADA");
+            alert("✅ DATOS GUARDADOS");
         }).catch(e => alert("Error: "+e.message))
         .finally(() => { btn.innerText = txtOrig; btn.disabled = false; });
     };
@@ -124,7 +151,7 @@ function saveProfile() {
         fetch(`https://api.cloudinary.com/v1_1/disfeeqe8/image/upload`, { method: "POST", body: formData })
         .then(r => r.json())
         .then(data => { if(data.secure_url) updateDB(data.secure_url); else throw new Error("Error foto"); })
-        .catch(e => { alert("Error subida: " + e.message); btn.disabled = false; btn.innerText = txtOrig; });
+        .catch(e => { alert("Error: " + e.message); btn.disabled = false; btn.innerText = txtOrig; });
     } else {
         updateDB(currentUser.avatar);
     }
@@ -133,36 +160,28 @@ function saveProfile() {
 // CAMBIAR CONTRASEÑA
 function changeUserPassword() {
     const newPass = document.getElementById('prof-new-pass').value;
-    if (newPass.length < 6) return alert("❌ La contraseña debe tener al menos 6 caracteres.");
+    if (newPass.length < 6) return alert("❌ Mínimo 6 caracteres.");
     
     const user = auth.currentUser;
     user.updatePassword(newPass).then(() => {
-        alert("✅ Contraseña actualizada. Por favor, vuelve a iniciar sesión.");
+        alert("✅ Contraseña cambiada. Inicia sesión de nuevo.");
         logout();
     }).catch((error) => {
-        alert("❌ Error: " + error.message + "\n(Es posible que debas salir y volver a entrar para hacer esto).");
+        alert("❌ Error: " + error.message + "\n(Prueba a salir y volver a entrar).");
     });
 }
 
-// BORRAR CUENTA (DARSE DE BAJA)
+// BORRAR CUENTA
 function deleteUserAccount() {
-    if (!confirm("⚠️ ¿ESTÁS SEGURO?\n\nEsta acción borrará tu cuenta, tu historial y tus datos permanentemente.\n\nNo se puede deshacer.")) return;
+    if (!confirm("⚠️ ¿ESTÁS SEGURO?\nSe borrarán todos tus datos y pedidos.")) return;
     
     const user = auth.currentUser;
-    const uid = user.uid;
-
-    // 1. Borrar datos de Firestore
-    db.collection("users").doc(uid).delete().then(() => {
-        // 2. Borrar usuario de autenticación
+    db.collection("users").doc(user.uid).delete().then(() => {
         user.delete().then(() => {
-            alert("Cuenta eliminada. Hasta siempre, soldado.");
+            alert("Cuenta eliminada.");
             window.location.reload();
-        }).catch((error) => {
-            alert("Error al borrar usuario: " + error.message + "\n(Intenta cerrar sesión y volver a entrar).");
-        });
-    }).catch((error) => {
-        alert("Error al borrar datos: " + error.message);
-    });
+        }).catch((e) => alert("Error al borrar usuario: " + e.message));
+    }).catch((e) => alert("Error DB: " + e.message));
 }
 
 // --- UTILIDADES ---
@@ -207,7 +226,6 @@ function sendSupportEmail() {
         .catch(() => alert("❌ Error al enviar."));
 }
 
-// Menú Nav (Copia del anterior)
 function buildNavMenu() {
     const nav = document.getElementById('main-nav');
     if (!nav) return;
